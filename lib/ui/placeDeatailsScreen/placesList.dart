@@ -105,8 +105,21 @@ class _placesListState extends State<placesList> {
             child: ListView.builder(
                     cacheExtent: 9999,
                     scrollDirection: Axis.horizontal, 
-                    itemCount: displayedItemCount + (displayedItemCount < placeList.length ? 1 : 0),
+                    itemCount: placeList.length < displayedItemCount
+                        ? placeList.length
+                        : displayedItemCount + (displayedItemCount < placeList.length ? 1 : 0),
                     itemBuilder: (context, index) {
+                      // Check if this is the "See more" button
+                      if(index >= placeList.length) {
+                        return GestureDetector(
+                          onTap: () => _loadMore(),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Center(child: Text("See more")),
+                          )
+                        );
+                      }
+
                       final attraction = placeList[index];
                       final atPlaceId = attraction.id;
                       final attractionName = attraction.name;
@@ -114,7 +127,7 @@ class _placesListState extends State<placesList> {
                       final attractionRating = attraction.rating;
                       final address = attraction.address;
                       final type = attraction.type;
-                      
+
                         if(index < displayedItemCount) {
                           return GestureDetector(
                             onTap: ()=>{

@@ -27,22 +27,26 @@ class cityRepo {
 
    Future<List<Place>> searchCities(input)async{
 
-    final  query =await FirebaseFirestore.instance.collection("cities")
-                       .orderBy('title')
-                       .startAt([input])
-                       .limit(5)
-                       .get();
-                       
-     
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection("cities");
+
+    // If input is empty, get all cities
+    if (input == null || input.isEmpty) {
+      query = query.orderBy('title').limit(10);
+    } else {
+      // If input is not empty, filter by input
+      query = query.orderBy('title').startAt([input]).limit(5);
+    }
+
+    final querySnapshot = await query.get();
 
     final List<Place> list = [];
 
-     for(var i=0;i<query.docs.length;i++){
-      var city = Place.fromMap(query.docs[i].data());
+     for(var i=0;i<querySnapshot.docs.length;i++){
+      var city = Place.fromMap(querySnapshot.docs[i].data());
        list.add(city);
     }
 
-    
+
     return list;
 
   }

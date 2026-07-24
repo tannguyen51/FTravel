@@ -89,3 +89,8 @@ class cancelPlaningPlaces extends trip_event{
 
   cancelPlaningPlaces();
 }
+
+class DeleteTripEvent extends trip_event{
+  final String tripId;
+  DeleteTripEvent(this.tripId);
+}

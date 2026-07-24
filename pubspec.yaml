@@ -36,6 +36,10 @@ dependencies:
   firebase_core: ^2.14.0
   firebase_database: ^10.1.0
   firebase_auth: ^4.16.0
+  firebase_storage: ^11.6.0
+  firebase_messaging: ^14.7.10
+  firebase_in_app_messaging: ^0.7.4+10
+  google_sign_in: ^6.2.1
   cloud_firestore: ^4.8.2
   uuid: ^4.6.0
   flutter_bloc: ^8.1.3

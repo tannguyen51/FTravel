@@ -37,7 +37,7 @@ class search extends StatefulWidget {
       'places':[],
     }];
   bool isOnLongPress = false;
-  late List<Place> RecentlySearchList;
+  late List<Place> RecentlySearchList = [];
   
   _searchState( this.isTextFieldClicked,this.searchType,this.isSelectPlaces);
 
@@ -80,13 +80,53 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                                       color: const Color.fromARGB(255, 27, 27, 27),
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
-                              
-                                      ) 
+
+                                      )
                                     )
-                        
+
                         ),
-                    
-                  ]  
+
+                  ]
+                ),
+              ),
+            ),
+            // Search Type Selector
+            Visibility(
+              visible: !isTextFieldClicked,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 13.0, right: 13.0, bottom: 10.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: searchType,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'city',
+                          child: Text('Cities'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'attraction',
+                          child: Text('Attractions'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'restaurant',
+                          child: Text('Restaurants'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          searchType = value;
+                          inputData = ""; // Reset search when changing type
+                        });
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),

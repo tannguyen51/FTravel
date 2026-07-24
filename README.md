@@ -1,4 +1,4 @@
-# Travel App Flutter
+# FTravel - Flutter Travel App
 
 A cross-platform mobile application built with Flutter for travel planning and exploration. Users can search destinations, plan trips, save favorites, and view weather info.
 

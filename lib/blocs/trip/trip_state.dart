@@ -48,3 +48,11 @@ class tripCreatingSuccessState extends tripState{
 class tripCreateErrorState extends tripState{
   tripCreateErrorState();
 }
+
+class tripDeletedSuccessState extends tripState{
+  tripDeletedSuccessState();
+}
+
+class tripDeleteErrorState extends tripState{
+  tripDeleteErrorState();
+}

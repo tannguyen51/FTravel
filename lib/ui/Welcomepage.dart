@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:travelapp/ui/resetPassword.dart';
 import 'package:travelapp/ui/signup.dart';
@@ -32,6 +34,14 @@ class _welcomePageState extends State<welcomePage> {
   void initState() {
     super.initState();
     userbloc = BlocProvider.of<userBloc>(context);
+
+    // Listen for Firebase auth changes (for Google Sign-In)
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null && mounted) {
+        Get.offNamed('/home');
+      }
+    });
+
     mSub = userbloc.stream.listen((state) {
       if (state is resetPasswordState &&
           state.resetState[0]['isSend'] == true) {
@@ -47,6 +57,23 @@ class _welcomePageState extends State<welcomePage> {
             showError = true;
           });
         }
+      } else if (state is googleSignInErrorState) {
+        // Show dialog with Google Sign-In result
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Google Sign-In Result'),
+            content: SingleChildScrollView(
+              child: Text(state.errorMessage),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
       }
     });
   }
@@ -181,7 +208,7 @@ class _welcomePageState extends State<welcomePage> {
                                         margin: const EdgeInsets.only(
                                             left: 99.0, top: 0.0),
                                         child: Text(
-                                          "Sri travel",
+                                          "F travel",
                                           style: GoogleFonts.pacifico(
                                             // ignore: prefer_const_constructors
                                             textStyle: TextStyle(

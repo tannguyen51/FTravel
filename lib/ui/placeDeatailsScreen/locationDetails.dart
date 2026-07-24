@@ -217,6 +217,13 @@ class _locationDetailsState extends State<locationDetails> {
   }
 
   Widget buildBody() {
+    // Return loading widget if data not ready
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return ScrollConfiguration(
       behavior: const ScrollBehavior(),
       child: GlowingOverscrollIndicator(

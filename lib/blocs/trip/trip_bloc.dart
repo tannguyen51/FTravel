@@ -95,7 +95,17 @@ class tripBloc extends Bloc<trip_event,tripState> {
       }else{
         emit(tripCreateErrorState());
       }
-      
+
+    });
+
+    on<DeleteTripEvent>((event, emit) async {
+      bool isError = await tripRepo.deleteTrip(event.tripId);
+
+      if(isError == false){
+        emit(tripDeletedSuccessState());
+      }else{
+        emit(tripDeleteErrorState());
+      }
     });
 
     on<editPlaces>((event, emit) async {

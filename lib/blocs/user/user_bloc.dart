@@ -55,7 +55,11 @@ class userBloc extends Bloc<userEvent,userState>{
 
       }else if(event is signInWithGoogle){
 
-        await userAuthRep.signInWithGoogle();
+        try {
+          await userAuthRep.signInWithGoogle();
+        } catch (e) {
+          emit(googleSignInErrorState(e.toString()));
+        }
 
       }else if(event is signOutEvent){
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:travelapp/ui/createTrip.dart';
 import '../blocs/trip/trip_bloc.dart';
+import '../blocs/trip/trip_event.dart';
 import '../models/trip.dart';
 
 class mytrips extends StatefulWidget {
@@ -50,6 +52,36 @@ class _mytripsState extends State<mytrips> {
 
     }
 
+  }
+
+  Future<void> deleteTrip(String tripId, String tripName) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xóa trip'),
+        content: Text('Bạn có chắc muốn xóa "$tripName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      BlocProvider.of<tripBloc>(context).add(DeleteTripEvent(tripId));
+      await getTripList();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã xóa trip thành công!')),
+        );
+      }
+    }
   }
 
 
@@ -135,11 +167,12 @@ class _mytripsState extends State<mytrips> {
                                       children: [
                                         GestureDetector(
                                           onTap: () async {
-                            
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(builder: (context) => createTrip(placeName:'',placePhotoUrl: '',isEditTrip: true, trip: onGoingTrips[index],)));
                                           },
+                                          onLongPress: () => deleteTrip(onGoingTrips[index].tripId, onGoingTrips[index].tripName),
                                           child: Padding(
                                             padding: const EdgeInsets.only(right:11,),
                                             child: Container(

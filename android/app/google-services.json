@@ -1,46 +1,46 @@
 {
   "project_info": {
-    "project_number": "801398445076",
-    "firebase_url": "https://flutter-travel-app-3f538-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "flutter-travel-app-3f538",
-    "storage_bucket": "flutter-travel-app-3f538.appspot.com"
+    "project_number": "412860345150",
+    "firebase_url": "https://travel-app-my-2d48b-default-rtdb.firebaseio.com",
+    "project_id": "travel-app-my-2d48b",
+    "storage_bucket": "travel-app-my-2d48b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:801398445076:android:df86416ab466a3da0dc301",
+        "mobilesdk_app_id": "1:412860345150:android:eda9d8338c6706ab059a6f",
         "android_client_info": {
           "package_name": "com.example.travelapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "801398445076-g6j4fklejp6vgigksva4mu0d3spohi7q.apps.googleusercontent.com",
+          "client_id": "412860345150-k0150ppeoiss19lovkeiegmlotmfmi9o.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.travelapp",
-            "certificate_hash": "754cb347e7238987477dffce1206699153aa176e"
+            "certificate_hash": "7975cc73b696bc54aad16098c5bae269b23a1cce"
           }
         },
         {
-          "client_id": "801398445076-alg8tde7luo6vimem0gvmd8tthb4i829.apps.googleusercontent.com",
+          "client_id": "412860345150-5g6po3gbjhvif98vcs5afjb7v401ppka.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD7e8IvH1HSYcRVgy7fHq9VQyT_LKr8K6k"
+          "current_key": "AIzaSyANoW7-Cq-g0giswBF-nlU5pO6QoBr2_hA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "801398445076-alg8tde7luo6vimem0gvmd8tthb4i829.apps.googleusercontent.com",
+              "client_id": "412860345150-5g6po3gbjhvif98vcs5afjb7v401ppka.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "801398445076-u6hlucq0vdahjloqn5pfmfmm7qdorsot.apps.googleusercontent.com",
+              "client_id": "412860345150-r5chvotj9gafpb7j45ldd0er9vmdg66u.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.example.travelapp"

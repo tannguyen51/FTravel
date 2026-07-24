@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../models/user.dart' ;
 
 class userAuthRepo {
@@ -160,12 +161,59 @@ class userAuthRepo {
 
   Future<dynamic> signInWithGoogle() async {
 
+    String result = '';
+
     try{
-      final provider = auth.GoogleAuthProvider();
-      return await _firebaseAuth.signInWithProvider(provider);
+      result += 'Starting Google Sign-In...\n';
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        result += 'User cancelled\n';
+        throw Exception('SIGN_IN_CANCELLED');
+      }
+
+      result += 'Google account: ${googleUser.email}\n';
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      result += 'Signing in to Firebase...\n';
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+      result += 'Firebase OK: ${userCredential.user?.email}\n';
+
+      // Check if user exists in Firestore, create if not
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        result += 'Creating user in Firestore...\n';
+        await createUser(
+          userCredential.user!.uid,
+          userCredential.user!.email,
+          userCredential.user!.displayName ?? googleUser.displayName,
+          userCredential.user!.photoURL ?? googleUser.photoUrl,
+        );
+        result += 'User created!\n';
+      } else {
+        result += 'User exists in Firestore\n';
+      }
+
+      result += '✅ SUCCESS!';
+      throw Exception('SUCCESS: $result');
 
     } on Exception catch (e){
-      print(e);
+      if (e.toString().contains('SUCCESS')) {
+        rethrow;
+      }
+      result += '\n❌ ERROR: $e';
+      throw Exception('ERROR: $result');
     }
   }
 

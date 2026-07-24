@@ -39,3 +39,8 @@ class signOutState extends userState{
 
   signOutState();
 }
+
+class googleSignInErrorState extends userState{
+  String errorMessage;
+  googleSignInErrorState(this.errorMessage);
+}

@@ -19,15 +19,17 @@ class weatherRepo {
       final temp = (data['main']['temp'] as num).toDouble();
       final description = data['weather'][0]['description'] as String;
       final icon = data['weather'][0]['icon'] as String;
+      final cityName = data['name'] as String? ?? '';
 
       return {
         'temperature': temp,
         'description': description,
         'icon': icon,
         'iconUrl': 'https://openweathermap.org/img/wn/$icon@2x.png',
+        'cityName': cityName,
       };
     } else {
-      return {'temperature': 0.0, 'description': '', 'icon': ''};
+      return {'temperature': 0.0, 'description': '', 'icon': '', 'cityName': ''};
     }
   }
 }

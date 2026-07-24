@@ -112,15 +112,46 @@ class trip_repo{
   Future<int> countTotalTrips() async {
 
     late int count ;
-    
+
     await FirebaseFirestore.instance
       .collection('users').doc(user?.uid).collection('trips').count().get().then(
-        
+
         (ele) => count=ele.count!,
-        
+
         );
 
     return count;
+  }
+
+  Future<bool> deleteTrip(String tripId) async {
+    bool isError = false;
+    late String tripDocId;
+
+    try {
+      // Find the document ID by tripId
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .collection('trips')
+          .where('tripId', isEqualTo: tripId)
+          .get();
+
+      for (var element in querySnapshot.docs) {
+        tripDocId = element.id;
+      }
+
+      // Delete the document
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .collection('trips')
+          .doc(tripDocId)
+          .delete();
+    } catch (e) {
+      isError = true;
+    }
+
+    return isError;
   }
 
 }

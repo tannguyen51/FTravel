@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../blocs/user/user_bloc.dart';
+import '../repositories/weather/location_weather_service.dart';
 import 'placeDeatailsScreen/locationDetails.dart';
 
 class home extends StatefulWidget {
@@ -21,6 +22,8 @@ class home extends StatefulWidget {
 class _homeState extends State<home> {
 
   List<Map<String, dynamic>> attractionList = [];
+  List<Map<String, dynamic>> allPlaces = [];
+  String? selectedCategory;
   bool isLoading = true;
 
   @override
@@ -30,12 +33,23 @@ class _homeState extends State<home> {
   }
 
   late List<Map<String, dynamic>> categorieList = [
-    {"photo":"assets/images/hotel.png","name":"Hotel"},
-    {"photo":"assets/images/burger.png","name":"Cafes"},
-    {"photo":"assets/images/forest.png","name":"Parks"},
-    {"photo":"assets/images/flash.png","name":"Attractions"},
-    {"photo":"assets/images/gas-pump.png","name":"Gas station"},
+    {"photo":"assets/images/hotel.png","name":"Hotel", "category":"hotel"},
+    {"photo":"assets/images/burger.png","name":"Cafes", "category":"cafe"},
+    {"photo":"assets/images/forest.png","name":"Parks", "category":"park"},
+    {"photo":"assets/images/flash.png","name":"Attractions", "category":"attraction"},
+    {"photo":"assets/images/gas-pump.png","name":"Gas station", "category":"gas_station"},
   ];
+
+  void filterByCategory(String? category) {
+    setState(() {
+      selectedCategory = category;
+      if (category == null) {
+        attractionList = allPlaces;
+      } else {
+        attractionList = allPlaces.where((place) => place['type'] == category).toList();
+      }
+    });
+  }
 
   Future <void> getNearByPlaces ()async{
     final databaseReference = FirebaseDatabase.instance.ref('places');
@@ -57,7 +71,8 @@ class _homeState extends State<home> {
     }).where((element) => element != null).toList();
 
     setState(() {
-      attractionList = results.cast<Map<String, dynamic>>();
+      allPlaces = results.cast<Map<String, dynamic>>();
+      attractionList = allPlaces;
       isLoading = false;
     });
   }
@@ -90,29 +105,96 @@ class _homeState extends State<home> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // Greeting
+            // Greeting + Weather
             Padding(
               padding: const EdgeInsets.only(left:13.0,top:30.0,bottom:15.0),
               child: Row(
                 children: [
-                  FutureBuilder(
-                    future: userBlo.getUserDetails(),
-                    builder: (BuildContext context, AsyncSnapshot<auth.User?> snapshot) {
-                      if(snapshot.hasData){
-                        return SizedBox(
-                          width:250,
-                          child: Text("Hi ${snapshot.data!.displayName}",
-                            style: GoogleFonts.nunito(
-                              textStyle: const TextStyle(
-                                color: Color.fromARGB(255, 27, 27, 27),
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: FutureBuilder(
+                      future: userBlo.getUserDetails(),
+                      builder: (BuildContext context, AsyncSnapshot<auth.User?> snapshot) {
+                        if(snapshot.hasData){
+                          return SizedBox(
+                            width:250,
+                            child: Text("Hi ${snapshot.data!.displayName}",
+                              style: GoogleFonts.nunito(
+                                textStyle: const TextStyle(
+                                  color: Color.fromARGB(255, 27, 27, 27),
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                )
                               )
-                            )
+                            ),
+                          );
+                        }
+                        return Container();
+                      },
+                    ),
+                  ),
+                  // Weather Widget
+                  FutureBuilder<Map<String, dynamic>?>(
+                    future: LocationWeatherService().getCurrentWeather(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          width: 80,
+                          height: 40,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
                         );
                       }
-                      return Container();
+
+                      if (snapshot.hasData && snapshot.data != null) {
+                        final weather = snapshot.data!;
+                        final cityName = weather['cityName'] as String? ?? '';
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.network(
+                              weather['iconUrl'],
+                              width: 40,
+                              height: 40,
+                            ),
+                            const SizedBox(width: 4),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (cityName.isNotEmpty)
+                                  Text(
+                                    cityName,
+                                    style: GoogleFonts.nunito(
+                                      textStyle: const TextStyle(
+                                        color: Color.fromARGB(255, 100, 100, 100),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                Text(
+                                  '${weather['temperature'].toStringAsFixed(0)}°C',
+                                  style: GoogleFonts.nunito(
+                                    textStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 27, 27, 27),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      }
+
+                      return const SizedBox.shrink();
                     },
                   ),
                 ],
@@ -128,11 +210,20 @@ class _homeState extends State<home> {
                   itemCount: categorieList.length,
                   itemBuilder: (context, index) {
                     final categorie = categorieList[index];
+                    final isSelected = selectedCategory == categorie['category'];
                     return GestureDetector(
-                      onTap:() =>{},
+                      onTap:() {
+                        if (isSelected) {
+                          filterByCategory(null); // Deselect
+                        } else {
+                          filterByCategory(categorie['category']);
+                        }
+                      },
                       child: Card(
                         elevation: 0,
-                        color:const Color.fromARGB(255, 240, 238, 238),
+                        color: isSelected
+                            ? const Color.fromARGB(255, 10, 124, 132)
+                            : const Color.fromARGB(255, 240, 238, 238),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(17.0),
                         ),
@@ -146,8 +237,10 @@ class _homeState extends State<home> {
                                 padding: const EdgeInsets.only(left:5.0),
                                 child: Text(categorie['name'],
                                   style: GoogleFonts.cabin(
-                                    textStyle: const TextStyle(
-                                      color: Color.fromARGB(255, 27, 27, 27),
+                                    textStyle: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : const Color.fromARGB(255, 27, 27, 27),
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     )
