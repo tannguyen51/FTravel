@@ -693,14 +693,14 @@ Widget buildBody(BuildContext parentContext) {
                             axisDirection: AxisDirection.down,
                             color:const Color.fromARGB(255, 83, 83, 83),
                             child: ReorderableListView(
-                                
+
                                 padding: const EdgeInsets.symmetric(horizontal: 10,),
                                 onReorder: reorderData,
                                 children: <Widget>[
-                                  
+
                                   for (int index = 0; index < state.storeTripPlaces['$currentIndex'].length; index += 1)
-                                    
-                                      
+
+
                                         Card(
                                           color:const Color.fromARGB(255, 240, 238, 238),
                                           key: ValueKey(index),
@@ -716,14 +716,14 @@ Widget buildBody(BuildContext parentContext) {
                                                 height: 90,
                                                 width: 90,
                                                   decoration: BoxDecoration(
-                                                  
+
                                                   borderRadius: BorderRadius.circular(17),
                                                   image: DecorationImage(
-                                                    image: NetworkImage(state.storeTripPlaces['$currentIndex'][index]['imageUrls']),
+                                                    image: NetworkImage(state.storeTripPlaces['$currentIndex'][index]['imageUrls'][0]),
                                                     fit: BoxFit.cover
-                                                            
+
                                                   ),
-                                                
+
                                                 ),
                                               ),
                                               Padding(
@@ -741,17 +741,17 @@ Widget buildBody(BuildContext parentContext) {
                                                                   color: const Color.fromARGB(255, 27, 27, 27),
                                                                   fontSize: 15,
                                                                   fontWeight: FontWeight.w600,
-                                                          
-                                                                  ) 
+
+                                                                  )
                                                                 ),
-                                                          
+
                                                           ),
                                                         )
                                                       ],
                                                     )
                                                   ],
                                                 ),
-                                                
+
                                               ),
                                               Padding(
                                                 padding: const EdgeInsets.only(top:35),
@@ -766,8 +766,8 @@ Widget buildBody(BuildContext parentContext) {
                                                                       color: const Color.fromARGB(255, 27, 27, 27),
                                                                       fontSize: 20,
                                                                       fontWeight: FontWeight.w600,
-                                                              
-                                                                      ) 
+
+                                                                      )
                                                                     ),
                                                       ),
                                                     )
@@ -778,33 +778,21 @@ Widget buildBody(BuildContext parentContext) {
                                             )
                                           )
                                         ),
-                                  
+
                                 ]
                               ),
                             ),
                          ),
-                          Visibility(
-                          visible: state.storeTripPlaces['$currentIndex'].isNotEmpty,
-                            child: Positioned(
-                            top:410,
-                            left:100,
-                            child:Row(
-                              children: [
-                                SizedBox(
-                                  width:150,
-                                  child:modalBottomSheetButton(currentIndex: currentIndex, parentContext: parentContext,)
-                                ),
-                                
-                              ],
-                            ),
-                            
-                            ),
-                          )
                           ]
                         ),
-                      )
-                    
-                    
+                      ),
+                      Visibility(
+                        visible: state.storeTripPlaces['$currentIndex'].isNotEmpty,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: modalBottomSheetButton(currentIndex: currentIndex, parentContext: parentContext,),
+                        ),
+                      ),
                   ],
                 ),
               );

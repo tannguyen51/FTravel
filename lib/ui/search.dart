@@ -262,14 +262,19 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                                 axisDirection: AxisDirection.down,
                                 color:const Color.fromARGB(255, 100, 100, 100),
                                 child: ListView.builder(
-                                  itemCount: results.data?.length,
+                                  itemCount: results.data?.length ?? 0,
                                   itemBuilder: (context, index) {
                                     final searchRe = results.data?[index];
                                     final name = searchRe?['name'] ?? '';
                                     final photoReference = searchRe?['photoRef'] ?? '';
                                     final placeId = searchRe?['id'] ?? '';
                                     final placeType = searchRe?['type'] ?? 'attraction';
-                                    
+
+                                    // Filter by search input
+                                    if (inputData.isNotEmpty &&
+                                        !name.toLowerCase().contains(inputData.toLowerCase())) {
+                                      return const SizedBox.shrink();
+                                    }
                                                           
                                     return Column(
                                       children: [
