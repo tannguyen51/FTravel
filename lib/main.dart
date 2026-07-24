@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:travelapp/blocs/user/user_bloc.dart';
 import 'package:travelapp/repositories/firebase_options.dart';
 import 'package:travelapp/repositories/notifications/notification_service.dart';
+import 'package:travelapp/repositories/notifications/trip_notification_service.dart';
 import 'package:travelapp/ui/emailVerificationPage.dart';
 import 'package:travelapp/seed_data.dart';
 import 'blocs/place/placeList_bloc.dart';
@@ -78,6 +79,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Init Firebase Cloud Messaging
       await NotificationService().initialize();
+
+      // Init Trip Notification Service
+      try {
+        await TripNotificationService().saveFCMToken();
+        await TripNotificationService().checkUpcomingTrips();
+      } catch (e) {
+        debugPrint('Trip Notification error: $e');
+      }
 
       // Init Firebase In-App Messaging
       try {

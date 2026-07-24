@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -40,6 +41,32 @@ class search extends StatefulWidget {
   late List<Place> RecentlySearchList = [];
   
   _searchState( this.isTextFieldClicked,this.searchType,this.isSelectPlaces);
+
+  Future<List> getAllPlaces() async {
+    try {
+      final databaseReference = FirebaseDatabase.instance.ref('places');
+      final event = await databaseReference.once();
+      final data = event.snapshot.value as List<dynamic>;
+
+      final results = data.map((element) {
+        return {
+          'name': element['title'] ?? '',
+          'id': element['placeId'],
+          'photoRef': element['imageUrls'] != null && element['imageUrls'].isNotEmpty
+              ? element['imageUrls'][0]
+              : '',
+          'rating': element['rating'] ?? 3.0,
+          'address': element['address'] ?? '',
+          'type': element['categoryName'] ?? 'attraction',
+        };
+      }).toList();
+
+      inputData = "";
+      return results;
+    } catch (e) {
+      return [];
+    }
+  }
 
  
    @override
@@ -87,46 +114,6 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                         ),
 
                   ]
-                ),
-              ),
-            ),
-            // Search Type Selector
-            Visibility(
-              visible: !isTextFieldClicked,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 13.0, right: 13.0, bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: searchType,
-                      isExpanded: true,
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'city',
-                          child: Text('Cities'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'attraction',
-                          child: Text('Attractions'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'restaurant',
-                          child: Text('Restaurants'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          searchType = value;
-                          inputData = ""; // Reset search when changing type
-                        });
-                      },
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -250,7 +237,7 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
             ),
             //show search results-----------------------------------
               FutureBuilder(
-              future:placeBloc.searchPlaces(capitalize(inputData), searchType),
+              future: getAllPlaces(),
               builder: (BuildContext context, results) { 
                 
                 if(results.connectionState==ConnectionState.waiting){
@@ -278,9 +265,10 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                                   itemCount: results.data?.length,
                                   itemBuilder: (context, index) {
                                     final searchRe = results.data?[index];
-                                    final name = searchRe?.name;
-                                    final photoReference =searchRe?.photoRef;
-                                    final  placeId = searchRe?.id;
+                                    final name = searchRe?['name'] ?? '';
+                                    final photoReference = searchRe?['photoRef'] ?? '';
+                                    final placeId = searchRe?['id'] ?? '';
+                                    final placeType = searchRe?['type'] ?? 'attraction';
                                     
                                                           
                                     return Column(
@@ -301,59 +289,33 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                                             
                                           },
                                           onTap: () {
-                                                          
+
                                             if(isOnLongPress!= true){
-                                                          
-                                              if(searchType == 'city'){
-                                                          
+
                                               Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(builder: (context) =>  locationDetails(placeId:placeId,searchType:'city')));
-                                
-                                              if(RecentlySearchList.isNotEmpty){
-                                                bool contains=false;
-                                                for (var element in RecentlySearchList) { 
-                                   
-                                                  if(element.name.contains(results.data![index].name)){
-                                
-                                                   contains = true;
-                                                    
-                                                  }else{
-                                                    
-                                                    
-                                                  }
-                                                  
-                                                }
-                                                if(contains!=true){
-                                                   BlocProvider.of<placeListBloc>(context).add(addUserRecentlySearch(id:results.data![index].id , name: results.data![index].name, address: results.data![index].address,
-                                                  openingHours: results.data![index].openingHours, phone: results.data![index].phone, photoRef: results.data![index].photoRef,
-                                                  type: results.data![index].type, latitude: results.data![index].latitude, longitude: results.data![index].longitude));
-                                                }
-                                                
-                                                
-                                              }else{
-                                
-                                                BlocProvider.of<placeListBloc>(context).add(addUserRecentlySearch(id:results.data![index].id , name: results.data![index].name, address: results.data![index].address,
-                                                openingHours: results.data![index].openingHours, phone: results.data![index].phone, photoRef: results.data![index].photoRef,
-                                                type: results.data![index].type, latitude: results.data![index].latitude, longitude: results.data![index].longitude));
-                                                
-                                              }
-                                              
-                                
-                                             
-                                                            
-                                                          
-                                            }else if(searchType == 'attraction'){
-                                              Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(builder: (context) =>  locationDetails(placeId:placeId,searchType:'attraction')));
-                                                          
-                                                          
+                                                context,
+                                                MaterialPageRoute(builder: (context) =>  locationDetails(placeId: placeId, searchType: placeType)),
+                                              );
+
+                                              // Add to recent searches
+                                              try {
+                                                BlocProvider.of<placeListBloc>(context).add(
+                                                  addUserRecentlySearch(
+                                                    id: results.data![index]['id'] ?? '',
+                                                    name: results.data![index]['name'] ?? '',
+                                                    address: results.data![index]['address'] ?? '',
+                                                    openingHours: results.data![index]['openingHours'] ?? [],
+                                                    phone: results.data![index]['phone'] ?? '',
+                                                    photoRef: results.data![index]['photoRef'] ?? '',
+                                                    type: results.data![index]['type'] ?? '',
+                                                    latitude: results.data![index]['latitude'] ?? 0.0,
+                                                    longitude: results.data![index]['longitude'] ?? 0.0,
+                                                  ),
+                                                );
+                                              } catch (_) {}
+
                                             }
-                                                          
-                                          }
-                                                          
-                                          
+
                                           },
                                           child: Row(
                                             children: [
@@ -554,7 +516,7 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                     
                       RecentlySearchList =recentlySearch.data!;  
                       return
-                         Expanded(
+                         SizedBox(height: 300,
                            child: ScrollConfiguration(
                              behavior:const ScrollBehavior(),
                              child: GlowingOverscrollIndicator(
@@ -566,66 +528,104 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                                  scrollDirection: Axis.vertical,
                                  itemCount: recentlySearch.data!.length,
                                  itemBuilder: (context, index) {
-                                   
-                                   return
-                                     Row(
-                                       children: [
-                                         GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) =>  locationDetails(placeId:recentlySearch.data![index].id,searchType:'city')));
-                                          },
-                                           child: SizedBox(
-                                             child: Card(
-                                               elevation: 0,
-                                               color:const Color.fromARGB(255, 240, 238, 238),
-                                               shape: RoundedRectangleBorder(
-                                                       borderRadius: BorderRadius.circular(17.0),
-                                                     ),
-                                           
-                                               child:Column(
+                                   final place = recentlySearch.data![index];
+                                   return Padding(
+                                     padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                     child: GestureDetector(
+                                       onTap: () {
+                                         Navigator.push(
+                                           context,
+                                           MaterialPageRoute(builder: (context) => locationDetails(placeId: place.id, searchType: place.type)));
+                                       },
+                                       child: Container(
+                                         width: 360,
+                                         height: 90,
+                                         decoration: BoxDecoration(
+                                           color: const Color.fromARGB(255, 240, 238, 238),
+                                           borderRadius: BorderRadius.circular(12),
+                                         ),
+                                         child: Row(
+                                           children: [
+                                             ClipRRect(
+                                               borderRadius: const BorderRadius.only(
+                                                 topLeft: Radius.circular(12),
+                                                 bottomLeft: Radius.circular(12),
+                                               ),
+                                               child: Container(
+                                                 width: 90,
+                                                 height: 90,
+                                                 decoration: BoxDecoration(
+                                                   image: DecorationImage(
+                                                     image: NetworkImage(place.photoRef),
+                                                     fit: BoxFit.cover,
+                                                   ),
+                                                 ),
+                                               ),
+                                             ),
+                                             const SizedBox(width: 10),
+                                             Expanded(
+                                               child: Column(
+                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                 crossAxisAlignment: CrossAxisAlignment.center, 
                                                  children: [
-                                                   SizedBox(
-                                                   
-                                                     
-                                                     child: Row(
-                                                       mainAxisAlignment: MainAxisAlignment.center,
-                                                       crossAxisAlignment: CrossAxisAlignment.center,
+                                                   Text(
+                                                     place.name,
+                                                     style: GoogleFonts.cabin(
+                                                       textStyle: const TextStyle(
+                                                         color: Color.fromARGB(255, 27, 27, 27),
+                                                         fontSize: 14,
+                                                         fontWeight: FontWeight.bold,
+                                                       ),
+                                                     ),
+                                                     overflow: TextOverflow.ellipsis,
+                                                   ),
+                                                   const SizedBox(height: 4),
+                                                   Row(
+                                                     children: [
+                                                       Image.asset("assets/images/star.png", width: 14, height: 14),
+                                                       const SizedBox(width: 4),
+                                                       Text(
+                                                         "${place.rating}",
+                                                         style: GoogleFonts.cabin(
+                                                           textStyle: const TextStyle(
+                                                             color: Color.fromARGB(255, 95, 95, 95),
+                                                             fontSize: 12,
+                                                             fontWeight: FontWeight.bold,
+                                                           ),
+                                                         ),
+                                                       ),
+                                                     ],
+                                                   ),
+                                                   if (place.address.isNotEmpty) ...[
+                                                     const SizedBox(height: 4),
+                                                     Row(
                                                        children: [
-                                                       
-                                                         FittedBox(
-                                                           fit: BoxFit.cover,
-                                                           child: Padding(
-                                                             padding: const EdgeInsets.only(left:8,right:8,top:8,bottom:8),
-                                                             child: Text(recentlySearch.data![index].name,
-                                                                   style: GoogleFonts.cabin(
-                                                               // ignore: prefer_const_constructors
-                                                               textStyle: TextStyle(
-                                                               color: const Color.fromARGB(255, 27, 27, 27),
-                                                               fontSize: 14,
-                                                               fontWeight: FontWeight.bold,
-                                                                                             
-                                                               ) 
-                                                               )
+                                                         Image.asset('assets/images/location.png', width: 12, height: 12, color: Colors.grey),
+                                                         const SizedBox(width: 4),
+                                                         Expanded(
+                                                           child: Text(
+                                                             place.address,
+                                                             overflow: TextOverflow.ellipsis,
+                                                             style: GoogleFonts.cabin(
+                                                               textStyle: const TextStyle(
+                                                                 color: Color.fromARGB(255, 94, 94, 94),
+                                                                 fontSize: 10,
+                                                                 fontWeight: FontWeight.bold,
+                                                               ),
                                                              ),
                                                            ),
-                                                         ),          
+                                                         ),
                                                        ],
                                                      ),
-                                                   ),
-                                                   
+                                                   ],
                                                  ],
-                                                               
-                                                               
-                                               )
+                                               ),
                                              ),
-                                           ),
+                                           ],
                                          ),
-                                       ],
-                                     );
+                                       ),
+                                     ),
+                                   );
                                                           
                                   },
                                  
@@ -633,7 +633,6 @@ String capitalize(String s) =>s.isNotEmpty? s[0].toUpperCase() + s.substring(1):
                              ),
                            ),
                          );
-
                     }else{
 
                       return Container();

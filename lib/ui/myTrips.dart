@@ -215,16 +215,25 @@ class _mytripsState extends State<mytrips> {
                                                                                 color: const Color.fromARGB(255, 95, 95, 95),
                                                                                 fontSize: 12,
                                                                                 fontWeight: FontWeight.bold,
-                                                                                                                                          
-                                                                                ) 
-                                                                              )
-                                                                                                                                            
-                                                                            ),
-                                                                          ), 
+                                                                                )                                                                              )
+                                                                              ),
+                                                                          ),
                                                                     )
-                                                              
+                                                              ),
+                                                        ),
+                                                        const Spacer(),
+                                                        GestureDetector(
+                                                          onTap: () => deleteTrip(onGoingTrips[index].tripId, onGoingTrips[index].tripName),
+                                                          child: Container(
+                                                            width: 24,
+                                                            height: 24,
+                                                            decoration: BoxDecoration(
+                                                              color: const Color.fromARGB(180, 240, 238, 238),
+                                                              borderRadius: BorderRadius.circular(12),
+                                                            ),
+                                                            child: const Icon(Icons.delete_outline, color: Colors.red, size: 16),
                                                           ),
-                                                    ),
+                                                        ),
                                                       ],
                                                     ),
                                                     Padding(

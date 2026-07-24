@@ -32,7 +32,7 @@ final String id;
 
     'placeId':id,
     'title':name,
-    'imageUrls':photoRef,
+    'imageUrls':[photoRef],
     'address':address,
     'searchString':type,
     'phone':phone,

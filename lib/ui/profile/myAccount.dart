@@ -118,63 +118,40 @@ class _myAccountState extends State<myAccount> {
     }
   }
 
-  Future<void> _showInstallationIdDialog() async {
-    if (!mounted) return;
+  Future<void> _changePassword() async {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Firebase Installation ID (FID)'),
+        title: const Text('Đổi mật khẩu'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Cách lấy FID để test In-App Messaging:',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  '1. Kết nối thiết bị với máy tính qua USB\n\n'
-                  '2. Mở Android Studio → Logcat\n\n'
-                  '3. Mở app FTravel này\n\n'
-                  '4. Trong Logcat, tìm dòng:\n'
-                  '   I/FIAM.Headless: Starting InAppMessaging runtime with Installation ID [YOUR_FID]\n\n'
-                  '5. Copy FID (dãy ký tự sau "Installation ID")\n\n'
-                  '6. Paste FID vào Firebase Console → In-App Messaging → Test on Device',
-                  style: TextStyle(
-                    fontSize: 11,
-                    height: 1.5,
-                  ),
+              TextField(
+                controller: currentPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Mật khẩu hiện tại',
                 ),
               ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
+              const SizedBox(height: 10),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Mật khẩu mới',
                 ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'FCM Token (nút bên trên) dùng cho Cloud Messaging\n'
-                        'FID (từ Logcat) dùng cho In-App Messaging',
-                        style: TextStyle(fontSize: 10, color: Colors.blue),
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Xác nhận mật khẩu mới',
                 ),
               ),
             ],
@@ -183,7 +160,47 @@ class _myAccountState extends State<myAccount> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Đã hiểu'),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (newPasswordController.text != confirmPasswordController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mật khẩu xác nhận không khớp!')),
+                );
+                return;
+              }
+              if (newPasswordController.text.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mật khẩu phải có ít nhất 6 ký tự!')),
+                );
+                return;
+              }
+
+              try {
+                // Re-authenticate then update password
+                final user = auth.FirebaseAuth.instance.currentUser;
+                if (user != null && user.email != null) {
+                  final credential = auth.EmailAuthProvider.credential(
+                    email: user.email!,
+                    password: currentPasswordController.text,
+                  );
+                  await user.reauthenticateWithCredential(credential);
+                  await user.updatePassword(newPasswordController.text);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đổi mật khẩu thành công!')),
+                    );
+                  }
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: ${e.toString()}')),
+                );
+              }
+            },
+            child: const Text('Đổi mật khẩu'),
           ),
         ],
       ),
@@ -361,24 +378,21 @@ class _myAccountState extends State<myAccount> {
                     ),
                   ),
 
-                  // Installation ID Button
+                  // Change Password Button
                   Padding(
                     padding: const EdgeInsets.only(top: 10, left: 13, right: 13),
                     child: SizedBox(
                       width: double.infinity,
                       height: 45,
                       child: ElevatedButton.icon(
-                        onPressed: _showInstallationIdDialog,
-                        icon: const Icon(Icons.fingerprint, size: 20),
+                        onPressed: _changePassword,
+                        icon: const Icon(Icons.lock_outline, size: 20),
                         label: const Text(
-                          'Installation ID',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
+                          'Change Password',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 56, 142, 60),
+                          backgroundColor: const Color.fromARGB(255, 255, 152, 0),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),

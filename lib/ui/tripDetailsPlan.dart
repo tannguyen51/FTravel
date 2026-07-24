@@ -438,6 +438,41 @@ Widget buildBody(BuildContext parentContext) {
                                    ],
                                  ),
                                ),
+                               // Budget & Location info
+                               Padding(
+                                 padding: const EdgeInsets.only(left: 15, top: 5),
+                                 child: Row(
+                                   children: [
+                                     if (trip.tripLocation.isNotEmpty) ...[
+                                       const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                       const SizedBox(width: 4),
+                                       Text(
+                                         trip.tripLocation,
+                                         style: GoogleFonts.cabin(
+                                           textStyle: const TextStyle(
+                                             color: Colors.grey,
+                                             fontSize: 12,
+                                           ),
+                                         ),
+                                       ),
+                                       const SizedBox(width: 16),
+                                     ],
+                                     if (trip.tripBudget.isNotEmpty) ...[
+                                       const Icon(Icons.money, size: 14, color: Colors.grey),
+                                       const SizedBox(width: 4),
+                                       Text(
+                                         'Budget: \$${trip.tripBudget}',
+                                         style: GoogleFonts.cabin(
+                                           textStyle: const TextStyle(
+                                             color: Colors.grey,
+                                             fontSize: 12,
+                                           ),
+                                         ),
+                                       ),
+                                     ],
+                                   ],
+                                 ),
+                               ),
                                Padding(
                                  padding: const EdgeInsets.only(top:15,left:240),
                                  child: TextButton(

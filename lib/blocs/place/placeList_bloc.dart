@@ -139,13 +139,10 @@ class placeListBloc extends Bloc<place_event,place_state>{
 
       }else if(event is addUserRecentlySearch){
 
-        if(event.type=='locality'){
-
          await cityRep.addUserRecentlySearch(Place(id: event.id, name: event.name, photoRef: event.photoRef,
            rating:0.0, address: event.address, type: event.type, phone: event.phone,
             openingHours: event.openingHours, latitude: event.latitude, longitude: event.longitude, reviews: []));
-        }
-        
+
       }else if(event is addReviewEvent){
         if(event.placeType =='attraction') {
           await attractionListRep.addReview(event.placeId,event.reviews,event.userId);
