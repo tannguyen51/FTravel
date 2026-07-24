@@ -10,7 +10,7 @@ A cross-platform mobile application built with Flutter for travel planning and e
 - Favorites list
 - Real-time weather via OpenWeatherMap API
 - Firebase integration (Auth, Firestore, Realtime Database)
-- Review system
+
 
 ## Built With
 
